@@ -53,7 +53,7 @@ Each class name ("context") is used as a temporary filter.
 Editor Console Pro supports ignoring stack trace ignores. Adding [Zenject](https://github.com/modesttree/Zenject), [UniRx](https://github.com/neuecc/UniRx) and NoxLog to the ignores,
  will in most cases help you see your own code instead of wrapper functions. Be aware that this makes it more difficult to find bugs in those 3rd party libraries.
 
-[[https://github.com/noxmortem/noxlog/blob/master/docs/images/editor-console-pro-recommended-ignores.PNG|alt=editor-console-pro-recommended-ignores.PNG]]
+[[https://raw.githubusercontent.com/NoxMortem/NoxLog/master/docs/images/editor-console-pro-recommended-ignores.PNG|alt=editor-console-pro-recommended-ignores.PNG]]
 
 ### Zenject
 This simple logger is shipped with an example Installer for [Zenject](https://github.com/modesttree/Zenject).
@@ -63,9 +63,10 @@ and override the `LogLevel` via a new specific Binding.
 
 Even if you do not use `Zenject` or a different DI container, you still can use this logger or it's singleton variant
 ```
-// The context 
+// The context can be any object and the type name will be used as filter, s.t. all logs from `class C` will end up in the Editor Console Pro Filter #C#
+// or it can be a string used as filter.
 // public Logger(object context = null, LogLevel logLevel = LogLevel.Trace)
-
+// 
 ```
 
 #### Examples: Zenject Installation & Configuration
