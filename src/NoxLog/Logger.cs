@@ -20,6 +20,9 @@ namespace Infrastructure.NoxLog
 			SetLogLevel(logLevel);
 		}
 
+#if ZENJECT
+		[Inject]
+#endif
 		public Logger(object context = null, LogLevel logLevel = LogLevel.Trace)
 		{
 			SetLogLevel(logLevel);
@@ -38,7 +41,7 @@ namespace Infrastructure.NoxLog
 			{
 				case null:     return filter;
 				case string s: return s;
-				default:       return context is Type t ? $"#{t.Name}#" : $"#{context.GetType().Name}";
+				default:       return context is Type t ? $"#{t.Name}#" : $"#{context.GetType().Name}#";
 			}
 		}
 
