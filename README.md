@@ -10,8 +10,37 @@ It's main goal is to provide convenient logging in unity.
 * Classic loglevel based
 * Provides optional extensions for this.*
 
-## Installation
+## Usage
+```
+this.logger.Trace($"Option 1: {name}");
+// Option 2: Use the copy of the default logger and set the context manually
+logger.SetContext(this); 			// Adds #this.GetType().Name# as filter for Editor Console Pro
+logger.SetLogLevel(LogLevel.Debug);	// Overwrite the LogLevel manually if you do not use Container.BindLogger<T>(LogLevel) on DI level
+logger.Trace($"Option 2: {name}");
+// Option 3: Use the static Logger with a) using Logger = Infrastructure.NoxLog.Logger; or b) specify the full namespace Infrastructure.NoxLog.Logger
+Logger.StaticLogger.SetContext("Example"); 				// Optionally redefine the context
+Logger.StaticLogger.SetLogLevel(LogLevel.Trace); 		// Optionally redefine the loglevel
+Logger.LogTrace($"Option 3.1: Without context {name}");
+Logger.LogTrace(this, $"Option 3.2: With context {name}");
+// Option 4: use the extension method for the static logger. Requires LOGGER_EXTENSIONS
+this.LogTrace("Inject 5");
+"Example".LogTrace("Inject 6"); // If this is a string, it will directly be picked up as a filter for Editor Console Pro, e.g. #Example#
+```
 
+## LogLevels
+```
+public enum LogLevel
+{
+	Trace,
+	Debug,
+	Info,
+	Warning,
+	Error,
+	None
+}
+```
+
+# Installation
 * Import the noxlog-<version>.unitypackage
 * Move the folder NoxLog/* folder to any assembly linked to any other you intend to use logging 
   * e.g. Plugins/* if you do not use assembly definitions
@@ -28,34 +57,21 @@ using Zenject;
 #endif
 ```
 
-## LogLevels
-```
-public enum LogLevel
-{
-	Trace,
-	Debug,
-	Info,
-	Warning,
-	Error,
-	None
-}
-```
+# (Optional) 3rd Party Support
 
-## (Optional) 3rd Party Support
-
-### Editor Console Pro
+## Editor Console Pro
 Please see the [Editor Console Pro Documentation](http://flyingworm.com/) for all the features this improved console provides.
 
 This simple logger utilizes [Editor Console Pro](https://assetstore.unity.com/packages/tools/utilities/editor-console-pro-11889) filters.
 Each class name ("context") is used as a temporary filter.
 
-#### Recommended Stack Trace Ignores
+### Recommended Stack Trace Ignores
 Editor Console Pro supports ignoring stack trace ignores. Adding [Zenject](https://github.com/modesttree/Zenject), [UniRx](https://github.com/neuecc/UniRx) and NoxLog to the ignores,
  will in most cases help you see your own code instead of wrapper functions. Be aware that this makes it more difficult to find bugs in those 3rd party libraries.
 
 ![editor-console-pro-recommended-ignores.PNG](https://raw.githubusercontent.com/NoxMortem/NoxLog/master/docs/images/editor-console-pro-recommended-ignores.PNG)
 
-### Zenject
+## Zenject
 This simple logger is shipped with an example Installer for [Zenject](https://github.com/modesttree/Zenject).
 I highly recommend Zenject in general, and even this small logger shows some nice things you can easily eachieve with a good DI Container.
 With the Zenject Installer you can request both the `defaultLogger`, the `Logger.Factory` and create your own Factory or request a `Logger`
@@ -73,7 +89,7 @@ this.logger = new Logger(this);
 this.logger = new Logger();
 ```
 
-#### Examples: Zenject Installation & Configuration
+### Examples: Zenject Installation & Configuration
 Please see the [Zenject#Installers](https://github.com/modesttree/Zenject#Installers) documentation about how to use custom installers in the first place.
 ```
 // Install the default bindings
@@ -85,7 +101,7 @@ Container.BindLogger(LogLevel.Trace);
 Container.BindLogger<T>(LogLevel.Debug);
 ```
 
-#### Zenject Usage
+### Zenject Usage
 ```
 // Examples
 [Inject, UsedImplicitly]
@@ -93,19 +109,8 @@ public void Inject(Logger.Factory logging, Logger logger)
 {
 	// Option 1: Inject Logger.Factory to create a logger with this context and a specific LogLevel
 	this.logger = logging.Create(this, LogLevel.Trace);
-	this.logger.Trace($"Option 1: {name}");
-	// Option 2: Use the copy of the default logger and set the context manually
-	logger.SetContext(this); 			// Adds #this.GetType().Name# as filter for Editor Console Pro
-	logger.SetLogLevel(LogLevel.Debug);	// Overwrite the LogLevel manually if you do not use Container.BindLogger<T>(LogLevel) on DI level
-	logger.Trace($"Option 2: {name}");
-	// Option 3: Use the static Logger with a) using Logger = Infrastructure.NoxLog.Logger; or b) specify the full namespace Infrastructure.NoxLog.Logger
-	Logger.StaticLogger.SetContext("Example"); 				// Optionally redefine the context
-	Logger.StaticLogger.SetLogLevel(LogLevel.Trace); 		// Optionally redefine the loglevel
-	Logger.LogTrace($"Option 3.1: Without context {name}");
-	Logger.LogTrace(this, $"Option 3.2: With context {name}");
-	// Option 4: use the extension method for the static logger. Requires LOGGER_EXTENSIONS
-	this.LogTrace("Inject 5");
-	"Example".LogTrace("Inject 6"); // If this is a string, it will directly be picked up as a filter for Editor Console Pro, e.g. #Example#
+	// Option 2: Inject a copy of the default logger
+	this.logger = logger;
 }
 ```
 
