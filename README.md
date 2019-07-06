@@ -53,7 +53,7 @@ Each class name ("context") is used as a temporary filter.
 Editor Console Pro supports ignoring stack trace ignores. Adding [Zenject](https://github.com/modesttree/Zenject), [UniRx](https://github.com/neuecc/UniRx) and NoxLog to the ignores,
  will in most cases help you see your own code instead of wrapper functions. Be aware that this makes it more difficult to find bugs in those 3rd party libraries.
 
-[[https://raw.githubusercontent.com/NoxMortem/NoxLog/master/docs/images/editor-console-pro-recommended-ignores.PNG|alt=editor-console-pro-recommended-ignores.PNG]]
+![](https://raw.githubusercontent.com/NoxMortem/NoxLog/master/docs/images/editor-console-pro-recommended-ignores.PNG|alt=editor-console-pro-recommended-ignores.PNG)
 
 ### Zenject
 This simple logger is shipped with an example Installer for [Zenject](https://github.com/modesttree/Zenject).
