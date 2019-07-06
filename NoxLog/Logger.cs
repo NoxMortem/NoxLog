@@ -33,6 +33,18 @@ namespace Infrastructure.NoxLog
 
 		public void SetContext(object context) => filter = GetFilter(context);
 
+		public Logger For(object context)
+		{
+			SetContext(context);
+			return this;
+		}
+
+		public Logger With(LogLevel level)
+		{
+			SetLogLevel(level);
+			return this;
+		}
+
 		public void SetLogLevel(LogLevel level) => logLevel = level;
 
 		public string GetFilter(object context)
