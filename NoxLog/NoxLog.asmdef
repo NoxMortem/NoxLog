@@ -1,0 +1,17 @@
+{
+    "name": "NoxLog",
+    "references": [
+        "GUID:2e31385ce0f2dfa4da44b59682186cb6"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Zenject-usage.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": []
+}
