@@ -11,9 +11,9 @@ namespace Infrastructure.NoxLog
 {
 	public class Logger
 	{
-		internal static readonly Logger   StaticLogger = new Logger();
-		private                  string   filter       = "";
-		private                  LogLevel logLevel;
+		public static readonly Logger   StaticLogger = new Logger();
+		private                string   filter       = "";
+		private                LogLevel logLevel;
 
 		public Logger(LogLevel logLevel = LogLevel.Trace)
 		{
@@ -40,7 +40,7 @@ namespace Infrastructure.NoxLog
 			switch (context)
 			{
 				case null:     return filter;
-				case string s: return s;
+				case string s: return $"#{s}#";
 				default:       return context is Type t ? $"#{t.Name}#" : $"#{context.GetType().Name}#";
 			}
 		}

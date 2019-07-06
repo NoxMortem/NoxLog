@@ -65,8 +65,12 @@ Even if you do not use `Zenject` or a different DI container, you still can use 
 ```
 // The context can be any object and the type name will be used as filter, s.t. all logs from `class C` will end up in the Editor Console Pro Filter #C#
 // or it can be a string used as filter.
+// public Logger(LogLevel logLevel = LogLevel.Trace)
 // public Logger(object context = null, LogLevel logLevel = LogLevel.Trace)
-// 
+this.logger = new Logger(this, LogLevel.Debug);
+this.logger = new Logger(LogLevel.Debug);
+this.logger = new Logger(this);
+this.logger = new Logger();
 ```
 
 #### Examples: Zenject Installation & Configuration
@@ -82,7 +86,36 @@ Container.BindLogger<T>(LogLevel.Debug);
 ```
 
 #### Zenject Usage
+```
+// Examples
+[Inject, UsedImplicitly]
+public void Inject(Logger.Factory logging, Logger logger)
+{
+	// Option 1: Inject Logger.Factory to create a logger with this context and a specific LogLevel
+	this.logger = logging.Create(this, LogLevel.Trace);
+	this.logger.Trace($"Option 1: {name}");
+	// Option 2: Use the copy of the default logger and set the context manually
+	logger.SetContext(this); 			// Adds #this.GetType().Name# as filter for Editor Console Pro
+	logger.SetLogLevel(LogLevel.Debug);	// Overwrite the LogLevel manually if you do not use Container.BindLogger<T>(LogLevel) on DI level
+	logger.Trace($"Option 2: {name}");
+	// Option 3: Use the static Logger with a) using Logger = Infrastructure.NoxLog.Logger; or b) specify the full namespace Infrastructure.NoxLog.Logger
+	Logger.StaticLogger.SetContext("Example"); 				// Optionally redefine the context
+	Logger.StaticLogger.SetLogLevel(LogLevel.Trace); 		// Optionally redefine the loglevel
+	Logger.LogTrace($"Option 3.1: Without context {name}");
+	Logger.LogTrace(this, $"Option 3.2: With context {name}");
+	// Option 4: use the extension method for the static logger. Requires LOGGER_EXTENSIONS
+	this.LogTrace("Inject 5");
+	"Example".LogTrace("Inject 6"); // If this is a string, it will directly be picked up as a filter for Editor Console Pro, e.g. #Example#
+}
+```
 
+# Best Practices
+* Do *not* use the static Logger.LogTrace(msg) or this.LogTrace(msg) or "Example".LogTraec(msg).
+  These are convenience functions to provide quick fully featured logging during tracer bullet style logging used commonly for debugging
+* **Do** use constructor injection for the Logger.
+  * If you do not want to use any DI framework, inject the logger manually. This allows to inject a different logger during testing, e.g. one which does not log.
+  * If you do not want to inject the logger at all, at least create your logger per base class and inherit it.
+* The usage of Editor Console Pro or any other console replacement for unity which allows temporary filters is **highly** recommended. It should be quite easy to change how the filter is appended in Logger.cs if you use a different console.
 
 # Supported Scripting Defines
 * `ENABLE_LOGGER`
