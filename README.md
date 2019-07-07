@@ -99,6 +99,10 @@ Infrastructure.NoxLog.Installer.Install(Container);
 Container.BindLogger(LogLevel.Trace);
 // Overwrite the LogLevel for a specific class T
 Container.BindLogger<T>(LogLevel.Debug);
+
+// Overriding LogLevels
+Container.BindLogger(LogLevel.Error); 			// Default LogLevel for all loggers: Only log errors
+Container.BindLogger<LayerView>(LogLevel.Trace);// Override LogLevel for LayerView: Log everything
 ```
 
 ### Zenject Usage
