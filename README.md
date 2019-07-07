@@ -121,6 +121,7 @@ public void Inject(Logger.Factory logging, Logger logger)
   * If you do not want to use any DI framework, inject the logger manually. This allows to inject a different logger during testing, e.g. one which does not log.
   * If you do not want to inject the logger at all, at least create your logger per base class and inherit it.
 * The usage of Editor Console Pro or any other console replacement for unity which allows temporary filters is **highly** recommended. It should be quite easy to change how the filter is appended in Logger.cs if you use a different console.
+* Avoid to log unecessary things. If it feels like you need a logger in every class read this [Stackoverflow](https://stackoverflow.com/questions/9892137/windsor-pulling-transient-objects-from-the-container/9915056#9915056) answer.
 
 # Supported Scripting Defines
 * `ENABLE_LOGGER`
