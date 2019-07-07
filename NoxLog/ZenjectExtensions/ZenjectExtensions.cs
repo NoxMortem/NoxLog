@@ -10,9 +10,10 @@ namespace Infrastructure.NoxLog.ZenjectExtensions
 			container.Bind<Logger>().AsTransient().WithArguments(typeof(Logger), logLevel);
 			Logger.StaticLogger.SetLogLevel(logLevel);
 		}
-	
+
 		public static void BindLogger<T>(this DiContainer container, LogLevel logLevel)
 		{
+			Logger.Configure<T>(logLevel);
 			container.Bind<Logger>().AsTransient().WithArguments(typeof(T), logLevel).WhenInjectedInto<T>();
 		}
 	}

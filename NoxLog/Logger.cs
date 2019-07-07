@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 #if ZENJECT
@@ -11,27 +13,31 @@ namespace Infrastructure.NoxLog
 {
 	public class Logger
 	{
-		public static readonly Logger   StaticLogger = new Logger();
-		private                string   filter       = "";
-		private                LogLevel logLevel;
+		public static readonly Logger StaticLogger = new Logger();
+		public static readonly Logger None         = new Logger(LogLevel.None);
 
-		public Logger(LogLevel logLevel = LogLevel.Trace)
+		private string   filter = "";
+		private LogLevel LogLevel { get; set; }
+
+		private static readonly Dictionary<Type, LogLevel> LogLevels = new Dictionary<Type, LogLevel>();
+
+		public Logger(LogLevel LogLevel = LogLevel.Trace)
 		{
-			SetLogLevel(logLevel);
+			SetLogLevel(LogLevel);
 		}
 
 #if ZENJECT
 		[Inject]
 #endif
-		public Logger(object context = null, LogLevel logLevel = LogLevel.Trace)
+		public Logger(object context = null, LogLevel LogLevel = LogLevel.Trace)
 		{
-			SetLogLevel(logLevel);
+			SetLogLevel(LogLevel);
 			SetContext(context);
 		}
 
 		public Logger() => SetLogLevel(LogLevel.Trace);
 
-		public void SetContext(object context) => filter = GetFilter(context);
+		private void SetContext(object context) => filter = $"#{GetContextName(context)}#";
 
 		public Logger For(object context)
 		{
@@ -45,84 +51,134 @@ namespace Infrastructure.NoxLog
 			return this;
 		}
 
-		public void SetLogLevel(LogLevel level) => logLevel = level;
+		public void SetLogLevel(LogLevel level) => LogLevel = level;
 
-		public string GetFilter(object context)
+		public static void Configure<T>(LogLevel level) => LogLevels[typeof(T)] = level;
+
+		public static void Configure(Dictionary<Type, LogLevel> configuration)
+		{
+			foreach (var kvp in configuration)
+				LogLevels[kvp.Key] = kvp.Value;
+		}
+
+		private string GetContextName(object context)
 		{
 			switch (context)
 			{
-				case null:     return filter;
-				case string s: return $"#{s}#";
-				default:       return context is Type t ? $"#{t.Name}#" : $"#{context.GetType().Name}#";
+				case null:     return "";
+				case string s: return $"{s}";
+				case int i:    return $"{i.ToString()}";
+				case double d: return $"{d.ToString(CultureInfo.InvariantCulture)}";
+				case float f:  return $"{f.ToString(CultureInfo.InvariantCulture)}";
+				default:       return context is Type t ? $"{t.Name}" : $"{context.GetType().Name}";
 			}
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void LogContext(string msg, object context = null)
 		{
-			var f = GetFilter(context);
-			UnityEngine.Debug.Log(string.IsNullOrEmpty(f) ? $"{msg}" : $"{f}{msg}");
+			var f = GetContextName(context);
+			UnityEngine.Debug.Log(string.IsNullOrEmpty(f) ? $"{msg}" : $"#{f}#{msg}");
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void LogWarningContext(string msg, object context = null)
 		{
-			var f = GetFilter(context);
-			UnityEngine.Debug.LogWarning(string.IsNullOrEmpty(f) ? $"{msg}" : $"{f}{msg}");
+			var f = GetContextName(context);
+			UnityEngine.Debug.LogWarning(string.IsNullOrEmpty(f) ? $"{msg}" : $"{f}:{msg}");
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void LogErrorContext(string msg, object context = null)
 		{
-			var f = GetFilter(context);
-			UnityEngine.Debug.LogError(string.IsNullOrEmpty(f) ? $"{msg}" : $"{f}{msg}");
+			var f = GetContextName(context);
+			UnityEngine.Debug.LogError(string.IsNullOrEmpty(f) ? $"{msg}" : $"{f}:{msg}");
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Trace(string msg, object context = null)
 		{
-			if (logLevel <= LogLevel.Trace)
+			if (LogLevel <= LogLevel.Trace)
 				LogContext(msg, context);
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Debug(string msg, object context = null)
 		{
-			if (logLevel <= LogLevel.Debug)
+			if (LogLevel <= LogLevel.Debug)
 				LogContext(msg, context);
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Info(string msg, object context = null)
 		{
-			if (logLevel <= LogLevel.Info)
+			if (LogLevel <= LogLevel.Info)
 				LogContext(msg, context);
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Warning(string msg, object context = null)
 		{
-			if (logLevel <= LogLevel.Warning)
+			if (LogLevel <= LogLevel.Warning)
 				LogWarningContext(msg, context);
 		}
 
 		[Conditional("ENABLE_LOGGER"), DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Error(string msg, object context = null)
 		{
-			if (logLevel <= LogLevel.Error)
+			if (LogLevel <= LogLevel.Error)
 				LogErrorContext(msg, context);
 		}
 
-		public static void LogTrace(string   msg)                 => StaticLogger.Trace(msg);
-		public static void LogDebug(string   msg)                 => StaticLogger.Debug(msg);
-		public static void LogInfo(string    msg)                 => StaticLogger.Info(msg);
-		public static void LogWarning(string msg)                 => StaticLogger.Warning(msg);
-		public static void LogError(string   msg)                 => StaticLogger.Error(msg);
-		public static void LogTrace(object   context, string msg) => StaticLogger.Trace(msg, context);
-		public static void LogDebug(object   context, string msg) => StaticLogger.Debug(msg, context);
-		public static void LogInfo(object    context, string msg) => StaticLogger.Info(msg, context);
-		public static void LogWarning(object context, string msg) => StaticLogger.Warning(msg, context);
-		public static void LogError(object   context, string msg) => StaticLogger.Error(msg, context);
+		public static void LogTrace(string msg, object context = null)
+		{
+			var level = StaticLogger.LogLevel;
+			if (context != null && LogLevels.TryGetValue(context is Type t ? t : context.GetType(), out var ll))
+				level = ll;
+
+			if (level <= LogLevel.Trace)
+				StaticLogger.LogContext(msg, context);
+		}
+
+		public static void LogDebug(string msg, object context = null)
+		{
+			var level = StaticLogger.LogLevel;
+			if (context != null && LogLevels.TryGetValue(context is Type t ? t : context.GetType(), out var ll))
+				level = ll;
+
+			if (level <= LogLevel.Debug)
+				StaticLogger.LogContext(msg, context);
+		}
+
+		public static void LogInfo(string msg, object context = null)
+		{
+			var level = StaticLogger.LogLevel;
+			if (context != null && LogLevels.TryGetValue(context is Type t ? t : context.GetType(), out var ll))
+				level = ll;
+
+			if (level <= LogLevel.Info)
+				StaticLogger.LogContext(msg, context);
+		}
+
+		public static void LogWarning(string msg, object context = null)
+		{
+			var level = StaticLogger.LogLevel;
+			if (context != null && LogLevels.TryGetValue(context is Type t ? t : context.GetType(), out var ll))
+				level = ll;
+
+			if (level <= LogLevel.Warning)
+				StaticLogger.LogWarningContext(msg, context);
+		}
+
+		public static void LogError(string msg, object context = null)
+		{
+			var level = StaticLogger.LogLevel;
+			if (context != null && LogLevels.TryGetValue(context is Type t ? t : context.GetType(), out var ll))
+				level = ll;
+
+			if (level <= LogLevel.Error)
+				StaticLogger.LogErrorContext(msg, context);
+		}
 
 #if ZENJECT
 		[UsedImplicitly]
