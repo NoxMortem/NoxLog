@@ -115,9 +115,11 @@ public void Inject(Logger.Factory logging, Logger logger)
 ```
 
 # Best Practices
-* Do *not* use the static Logger.LogTrace(msg) or this.LogTrace(msg) or "Example".LogTraec(msg).
-  These are convenience functions to provide quick fully featured logging during tracer bullet style logging used commonly for debugging
-* **Do** use constructor injection for the Logger.
+* Do *not* use the static Logger.LogTrace(msg) or this.LogTrace(msg) or "Example".LogTrace(msg).
+  * These are convenience functions to provide quick fully featured logging during tracer bullet style logging used commonly for debugging
+  * It is fine to start with the static logger using `LOGGER_EXTENSIONS` this.LogTrace(msg) which is similar to using `UnityEngine.Debug` and before you check in the code you either remove the log or replace it with an
+  inject logger if the logging is there to stay.
+  * **Do** use constructor injection for the Logger.
   * If you do not want to use any DI framework, inject the logger manually. This allows to inject a different logger during testing, e.g. one which does not log.
   * If you do not want to inject the logger at all, at least create your logger per base class and inherit it.
 * The usage of Editor Console Pro or any other console replacement for unity which allows temporary filters is **highly** recommended. It should be quite easy to change how the filter is appended in Logger.cs if you use a different console.
